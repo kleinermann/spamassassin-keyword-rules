@@ -6,7 +6,7 @@ Put spam words and phrases into text files, one per line. `sa-keyword-rules` tur
 
 It also manages trusted and blocked senders (`welcomelist_auth`, `welcomelist_from`, `blocklist_from`) from simple lists.
 
-Requires Python 3 (standard library only) and SpamAssassin. Tested with SpamAssassin 4.x on Debian/Ubuntu.
+Requires Python 3 (standard library only) and SpamAssassin. Tested with SpamAssassin 4.x on Debian/Ubuntu (e.g. HestiaCP servers).
 
 > This is an independent project and is not affiliated with or endorsed by the Apache SpamAssassin project.
 
@@ -53,12 +53,48 @@ sa-keyword-rules         # build, lint, install, restart spamd
 
 ## Usage
 
-Add a phrase and rebuild:
+### Updating after you edit the lists
+
+Whenever you add, change or remove entries in any `lists/*.txt` file (or change a score in `local_rules.template`), rebuild:
+
+1. Edit the list and save it, for example:
+   ```bash
+   nano /root/spamassassin-keyword-rules/lists/body-business-pitch.txt
+   ```
+   Or add a single line straight from the command line:
+   ```bash
+   echo "guaranteed first page" >> /root/spamassassin-keyword-rules/lists/body-business-pitch.txt
+   ```
+2. Optional: check it first without changing anything:
+   ```bash
+   sa-keyword-rules --dry
+   ```
+3. Build and install:
+   ```bash
+   sa-keyword-rules
+   ```
+4. Check the last line of the output:
+   - `Lint OK – installed …, restarted spamd.` means the new rules are live.
+   - `LINT FAILED – previous rules restored` means nothing changed. Fix the line shown in the error (usually a broken `re:` entry) and run it again.
+
+Editing a list on its own does nothing until you run `sa-keyword-rules`. SpamAssassin only reads the generated `local_rules.cf`, never the lists.
+
+### Do I need to restart SpamAssassin?
+
+**No.** `sa-keyword-rules` restarts SpamAssassin automatically after a successful build. It tries the `spamd` service first, then `spamassassin`, because the name differs between systems. You don't need to restart Exim, Postfix or anything else either: they hand mail to spamd, which picks up the new rules when it restarts.
+
+Restart manually only if:
+- the output ends with `…but could not restart spamd!`, or
+- your server scans mail through something other than spamd (e.g. amavis), in which case restart that service instead.
 
 ```bash
-echo "guaranteed first page" >> /root/spamassassin-keyword-rules/lists/body-business-pitch.txt
-sa-keyword-rules
+systemctl restart spamd        # or: systemctl restart spamassassin
+systemctl restart amavis       # only if your server uses amavis
 ```
+
+New rules only apply to mail that arrives **after** the restart. Messages already delivered are not rescanned.
+
+### Options
 
 | Option | |
 |---|---|
