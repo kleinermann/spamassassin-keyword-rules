@@ -6,7 +6,7 @@ Put spam words and phrases into text files, one per line. `sa-keyword-rules` tur
 
 It also manages trusted and blocked senders (`welcomelist_auth`, `welcomelist_from`, `blocklist_from`) from simple lists.
 
-Requires Python 3 (standard library only) and SpamAssassin. Tested with SpamAssassin 4.x on Debian/Ubuntu (e.g. HestiaCP servers).
+Requires Python 3 (standard library only) and SpamAssassin. Tested with SpamAssassin 4.x on Debian/Ubuntu.
 
 > This is an independent project and is not affiliated with or endorsed by the Apache SpamAssassin project.
 
