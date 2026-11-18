@@ -1,0 +1,6 @@
+# Always treated as spam (blocklist_from).
+# Full address, *@domain, domain, or wildcards.
+#
+# Examples:
+# spam-example.invalid
+# *@*.xyz

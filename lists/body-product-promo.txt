@@ -1,0 +1,7 @@
+# Consumer product ads: coupons, free trials, beauty products, gadgets.
+# Scoring: only counts with 2+ hits (1.5).
+#
+# Examples (remove the # to activate):
+# free trial
+# limited-time offer
+# re:\bcoupons?\b

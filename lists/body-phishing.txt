@@ -1,0 +1,7 @@
+# Phishing lures.
+# Scoring: 3.0 each.
+#
+# Examples (remove the # to activate):
+# your mailbox is full
+# verify your account
+# unusual sign-in activity

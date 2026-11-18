@@ -1,0 +1,6 @@
+# Domains in links (URI rule). 5.0 each.
+# Paste plain domains or whole URLs – https://, www. and paths are stripped.
+#
+# Examples (replace with your own):
+# spam-example.invalid
+# https://www.another-spam-example.invalid/landing

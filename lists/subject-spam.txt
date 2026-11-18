@@ -1,0 +1,6 @@
+# Spam subject lines (matched anywhere in the subject).
+# Scoring: 3.5 each.
+#
+# Examples (remove the # to activate):
+# you have won
+# urgent business proposal

@@ -1,0 +1,7 @@
+# Classic spam phrases, rarely seen in legitimate mail.
+# Scoring: 1 hit = 3.0, 2+ hits = 5.0 total.
+#
+# Examples (remove the # to activate):
+# free money
+# you have won
+# keep it a secret

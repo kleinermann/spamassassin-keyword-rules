@@ -1,0 +1,7 @@
+# Adult content keywords.
+# Scoring: 1 hit = 3.0, 2+ hits = 5.0 total.
+#
+# Examples (remove the # to activate):
+# viagra
+# hot singles
+# re:\bporn\w*

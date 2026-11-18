@@ -1,0 +1,87 @@
+# ---------------------------------------------------------------
+# .gitignore – spamassassin-keyword-rules
+# ---------------------------------------------------------------
+
+# --- Project ---------------------------------------------------
+# Generated output and backups (the script writes these)
+local_rules.cf
+*.cf.bak
+*.bak
+*.old
+*.orig
+*.tmp
+
+# Private copies – never publish your real lists by accident
+*-private/
+*-private.zip
+*.private.txt
+
+# Archives
+*.zip
+*.tar.gz
+*.tgz
+
+# --- Python ----------------------------------------------------
+__pycache__/
+*.py[cod]
+
+# --- macOS -----------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+.TemporaryItems
+.VolumeIcon.icns
+.DocumentRevisions-V100
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+# Custom folder icon file (name ends in a carriage return)
+Icon
+
+# --- Windows ---------------------------------------------------
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+desktop.ini
+$RECYCLE.BIN/
+*.lnk
+*.stackdump
+
+# --- Linux -----------------------------------------------------
+*~
+.directory
+.Trash-*
+.nfs*
+.fuse_hidden*
+
+# --- Editors / IDEs --------------------------------------------
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*.swn
+.*.sw?
+*.kate-swp
+\#*\#
+.\#*
+.project
+.settings/
+*.code-workspace
+
+# --- Environment / secrets -------------------------------------
+.env
+.env.*
+*.pem
+*.key
+

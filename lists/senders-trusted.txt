@@ -1,0 +1,6 @@
+# Trusted senders – only trusted if SPF/DKIM confirms them (welcomelist_auth).
+# One per line: full address, *@domain, or just the domain (becomes *@domain).
+#
+# Examples – replace with your own domains, bank, payment providers etc.:
+# example.com
+# billing@example.org

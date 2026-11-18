@@ -1,0 +1,7 @@
+# Spam-only names, tools, brands or domain names appearing in the text.
+# Anything here scores 5.0 on its own – only add words that never appear
+# in legitimate mail you receive.
+#
+# Examples (replace with your own):
+# example-spam-tool
+# cheap-seo-brand

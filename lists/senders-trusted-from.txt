@@ -1,0 +1,3 @@
+# Trusted on the From address alone (welcomelist_from).
+# The From address can be forged – only use for senders whose SPF/DKIM is
+# broken, and keep this list short.

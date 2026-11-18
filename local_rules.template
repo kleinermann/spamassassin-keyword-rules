@@ -1,0 +1,233 @@
+###########################################################################
+# local_rules.cf – custom SpamAssassin keyword and sender rules
+# Built with sa-keyword-rules by Stefan Ehrenfeld (https://kleinermann.com.au)
+#
+# !!! GENERATED FILE – DO NOT EDIT THE OUTPUT FILE DIRECTLY !!!
+# Edit the word lists in lists/ (or the scores in this template) and run:
+#     sa-keyword-rules
+#
+# Approach:
+#  - Words that are spam-only score on their own.
+#  - Business-pitch words score little alone, and only add up when
+#    several appear in the same message (meta rules).
+#  - Rules starting with __ score nothing themselves; they feed meta rules.
+#
+# Default spam threshold is 5.0. Adjust the scores below to taste.
+###########################################################################
+
+#--------------------------------------------------------------------------
+# 0. Trusted and blocked senders
+#    welcomelist_auth = trusted only if SPF/DKIM confirms (preferred)
+#    welcomelist_from = trusted on From alone (forgeable – keep short)
+#    blocklist_from   = always spam
+#--------------------------------------------------------------------------
+# .................................................. lists/senders-trusted.txt
+{{senders:welcomelist_auth:senders-trusted.txt}}
+
+# .................................................. lists/senders-trusted-from.txt
+{{senders:welcomelist_from:senders-trusted-from.txt}}
+
+# .................................................. lists/senders-blocked.txt
+{{senders:blocklist_from:senders-blocked.txt}}
+
+
+# Decode all charsets to UTF-8 (needed for Chinese/Russian + curly quotes)
+normalize_charset 1
+
+
+# 1. Spam-only names / tools / domains ............ lists/body-spam-only.txt
+body     LOCAL_SPAM_NAMES  /(?:{{list:body-spam-only.txt}})/i
+score    LOCAL_SPAM_NAMES  5.0
+describe LOCAL_SPAM_NAMES  Known spammer name, tool or domain
+
+# ................................................. lists/body-link-domains.txt
+uri      LOCAL_SPAM_URI    /(?:{{domains:body-link-domains.txt}})/i
+score    LOCAL_SPAM_URI    5.0
+describe LOCAL_SPAM_URI    Link to known spammer domain
+
+
+# 2. Classic spam phrases ......................... lists/body-classic-spam.txt
+body     __LOCAL_PHRASE    /(?:{{list:body-classic-spam.txt}})/i
+tflags   __LOCAL_PHRASE    multiple maxhits=5
+meta     LOCAL_PHRASE_1    (__LOCAL_PHRASE >= 1)
+score    LOCAL_PHRASE_1    3.0
+describe LOCAL_PHRASE_1    Contains a classic spam phrase
+meta     LOCAL_PHRASE_2    (__LOCAL_PHRASE >= 2)
+score    LOCAL_PHRASE_2    2.0
+describe LOCAL_PHRASE_2    Contains several classic spam phrases
+
+
+# 3. Adult content ................................ lists/body-adult.txt
+body     __LOCAL_ADULT     /(?:{{list:body-adult.txt}})/i
+tflags   __LOCAL_ADULT     multiple maxhits=5
+meta     LOCAL_ADULT_1     (__LOCAL_ADULT >= 1)
+score    LOCAL_ADULT_1     3.0
+describe LOCAL_ADULT_1     Adult content keyword
+meta     LOCAL_ADULT_2     (__LOCAL_ADULT >= 2)
+score    LOCAL_ADULT_2     2.0
+describe LOCAL_ADULT_2     Several adult content keywords
+
+# "sex" alone is a weak signal – small nudge only
+body     LOCAL_ADULT_WEAK  /\bsex\b/i
+score    LOCAL_ADULT_WEAK  1.0
+describe LOCAL_ADULT_WEAK  Contains the word sex
+
+
+# 4. Business pitches + opt-out lines ............ lists/body-business-pitch.txt
+#    1 hit = 1.0, 2+ hits = 3.0 total, 4+ hits = 5.0 total
+body     __LOCAL_SEO       /(?:{{list:body-business-pitch.txt}})/i
+tflags   __LOCAL_SEO       multiple maxhits=6
+meta     LOCAL_SEO_1       (__LOCAL_SEO >= 1)
+score    LOCAL_SEO_1       1.0
+describe LOCAL_SEO_1       Business pitch phrase
+meta     LOCAL_SEO_2       (__LOCAL_SEO >= 2)
+score    LOCAL_SEO_2       2.0
+describe LOCAL_SEO_2       Several business pitch phrases
+meta     LOCAL_SEO_4       (__LOCAL_SEO >= 4)
+score    LOCAL_SEO_4       2.0
+describe LOCAL_SEO_4       Many business pitch phrases
+
+
+# 5. Product promotions ............................ lists/body-product-promo.txt
+body     __LOCAL_PROMO     /(?:{{list:body-product-promo.txt}})/i
+tflags   __LOCAL_PROMO     multiple maxhits=5
+meta     LOCAL_PROMO_2     (__LOCAL_PROMO >= 2)
+score    LOCAL_PROMO_2     1.5
+describe LOCAL_PROMO_2     Several product promotion keywords
+
+# Subject lines ................................... lists/subject-spam.txt
+header   LOCAL_SUBJ_PRODUCT  Subject =~ /(?:{{list:subject-spam.txt}})/i
+score    LOCAL_SUBJ_PRODUCT  3.5
+describe LOCAL_SUBJ_PRODUCT  Known spam subject
+
+
+# 6. Pitch or promotion with an unsubscribe footer
+#    Unsubscribe alone scores nothing (legitimate newsletters contain it).
+body     __LOCAL_UNSUB     /\bunsubscribe\b/i
+meta     LOCAL_COLD_PITCH  (__LOCAL_UNSUB && (__LOCAL_SEO >= 1 || __LOCAL_PROMO >= 1))
+score    LOCAL_COLD_PITCH  1.0
+describe LOCAL_COLD_PITCH  Pitch or promotion with unsubscribe footer
+
+
+# 7. Phishing lures ............................... lists/body-phishing.txt
+body     LOCAL_PHISH       /(?:{{list:body-phishing.txt}})/i
+score    LOCAL_PHISH       3.0
+describe LOCAL_PHISH       Phishing lure phrase
+
+
+#==========================================================================
+# FOREIGN-SCRIPT RULES (fixed – not driven by lists)
+# Each script: charset 3.0, encoded subject 3.0, subject text 4.0,
+# body text 4.0. Lower or delete the lines for any language you receive
+# legitimate mail in.
+#==========================================================================
+
+# 8. Chinese text
+header   CN_CHARSET       Content-Type =~ /charset="?(gb2312|gbk|gb18030|big5|hz-gb-2312)/i
+describe CN_CHARSET       Message uses a Chinese charset
+score    CN_CHARSET       3.0
+header   CN_SUBJ_ENCODED  Subject:raw =~ /=\?(gb2312|gbk|gb18030|big5)\?/i
+describe CN_SUBJ_ENCODED  Subject encoded in a Chinese charset
+score    CN_SUBJ_ENCODED  3.0
+header   CN_SUBJ_CHARS    Subject =~ /(?:[\xe4-\xe9][\x80-\xbf]{2}){3}/
+describe CN_SUBJ_CHARS    Chinese characters in subject
+score    CN_SUBJ_CHARS    4.0
+body     CN_BODY_CHARS    /(?:[\xe4-\xe9][\x80-\xbf]{2}){10}/
+describe CN_BODY_CHARS    Chinese text in body
+score    CN_BODY_CHARS    4.0
+
+
+# 9. Russian / Cyrillic text
+header   RU_CHARSET       Content-Type =~ /charset="?(koi8-r|koi8-u|windows-1251|cp1251|iso-8859-5)/i
+describe RU_CHARSET       Message uses a Cyrillic charset
+score    RU_CHARSET       3.0
+header   RU_SUBJ_ENCODED  Subject:raw =~ /=\?(koi8-r|koi8-u|windows-1251|cp1251|iso-8859-5)\?/i
+describe RU_SUBJ_ENCODED  Subject encoded in a Cyrillic charset
+score    RU_SUBJ_ENCODED  3.0
+header   RU_SUBJ_CHARS    Subject =~ /(?:[\xd0-\xd3][\x80-\xbf]){5}/
+describe RU_SUBJ_CHARS    Cyrillic text in subject
+score    RU_SUBJ_CHARS    4.0
+body     __RU_BODY_WORD   /(?:[\xd0-\xd3][\x80-\xbf]){5}/
+tflags   __RU_BODY_WORD   multiple maxhits=10
+meta     RU_BODY_CHARS    (__RU_BODY_WORD >= 5)
+describe RU_BODY_CHARS    Cyrillic text in body
+score    RU_BODY_CHARS    4.0
+
+
+# 10. Japanese (kana – Japanese kanji are also caught by the Chinese rules)
+header   JP_CHARSET       Content-Type =~ /charset="?(iso-2022-jp|shift[_-]?jis|sjis|euc-jp|windows-31j|cp932)/i
+describe JP_CHARSET       Message uses a Japanese charset
+score    JP_CHARSET       3.0
+header   JP_SUBJ_ENCODED  Subject:raw =~ /=\?(iso-2022-jp|shift[_-]?jis|sjis|euc-jp|windows-31j|cp932)\?/i
+describe JP_SUBJ_ENCODED  Subject encoded in a Japanese charset
+score    JP_SUBJ_ENCODED  3.0
+header   JP_SUBJ_CHARS    Subject =~ /(?:\xe3[\x81-\x83][\x80-\xbf]){3}/
+describe JP_SUBJ_CHARS    Japanese kana in subject
+score    JP_SUBJ_CHARS    4.0
+# Japanese mixes kana with kanji, so count kana characters in total
+body     __JP_BODY_KANA   /\xe3[\x81-\x83][\x80-\xbf]/
+tflags   __JP_BODY_KANA   multiple maxhits=10
+meta     JP_BODY_CHARS    (__JP_BODY_KANA >= 10)
+describe JP_BODY_CHARS    Japanese text in body
+score    JP_BODY_CHARS    4.0
+
+
+# 11. Korean (Hangul)
+header   KO_CHARSET       Content-Type =~ /charset="?(euc-kr|ks_c_5601-1987|iso-2022-kr|cp949)/i
+describe KO_CHARSET       Message uses a Korean charset
+score    KO_CHARSET       3.0
+header   KO_SUBJ_ENCODED  Subject:raw =~ /=\?(euc-kr|ks_c_5601-1987|iso-2022-kr|cp949)\?/i
+describe KO_SUBJ_ENCODED  Subject encoded in a Korean charset
+score    KO_SUBJ_ENCODED  3.0
+header   KO_SUBJ_CHARS    Subject =~ /(?:[\xea-\xed][\x80-\xbf]{2}){2}/
+describe KO_SUBJ_CHARS    Korean text in subject
+score    KO_SUBJ_CHARS    4.0
+body     __KO_BODY_WORD   /(?:[\xea-\xed][\x80-\xbf]{2}){2}/
+tflags   __KO_BODY_WORD   multiple maxhits=10
+meta     KO_BODY_CHARS    (__KO_BODY_WORD >= 5)
+describe KO_BODY_CHARS    Korean text in body
+score    KO_BODY_CHARS    4.0
+
+
+# 12. Arabic script (Arabic, Persian, Urdu)
+header   AR_CHARSET       Content-Type =~ /charset="?(windows-1256|cp1256|iso-8859-6)/i
+describe AR_CHARSET       Message uses an Arabic charset
+score    AR_CHARSET       3.0
+header   AR_SUBJ_ENCODED  Subject:raw =~ /=\?(windows-1256|cp1256|iso-8859-6)\?/i
+describe AR_SUBJ_ENCODED  Subject encoded in an Arabic charset
+score    AR_SUBJ_ENCODED  3.0
+header   AR_SUBJ_CHARS    Subject =~ /(?:[\xd8-\xdb][\x80-\xbf]){4}/
+describe AR_SUBJ_CHARS    Arabic script in subject
+score    AR_SUBJ_CHARS    4.0
+body     __AR_BODY_WORD   /(?:[\xd8-\xdb][\x80-\xbf]){4}/
+tflags   __AR_BODY_WORD   multiple maxhits=10
+meta     AR_BODY_CHARS    (__AR_BODY_WORD >= 5)
+describe AR_BODY_CHARS    Arabic script in body
+score    AR_BODY_CHARS    4.0
+
+
+# 13. Thai
+header   TH_CHARSET       Content-Type =~ /charset="?(tis-620|windows-874|cp874|iso-8859-11)/i
+describe TH_CHARSET       Message uses a Thai charset
+score    TH_CHARSET       3.0
+header   TH_SUBJ_ENCODED  Subject:raw =~ /=\?(tis-620|windows-874|cp874|iso-8859-11)\?/i
+describe TH_SUBJ_ENCODED  Subject encoded in a Thai charset
+score    TH_SUBJ_ENCODED  3.0
+header   TH_SUBJ_CHARS    Subject =~ /(?:\xe0[\xb8\xb9][\x80-\xbf]){4}/
+describe TH_SUBJ_CHARS    Thai text in subject
+score    TH_SUBJ_CHARS    4.0
+body     TH_BODY_CHARS    /(?:\xe0[\xb8\xb9][\x80-\xbf]){10}/
+describe TH_BODY_CHARS    Thai text in body
+score    TH_BODY_CHARS    4.0
+
+
+# 14. Optional: language detection for Latin-script languages
+#     The rules above detect writing systems. Spam in Latin-script
+#     languages (Spanish, Portuguese, German, Vietnamese, Turkish...) can
+#     only be caught by language detection (TextCat plugin, loaded in
+#     /etc/spamassassin/v310.pre). To use it, list the languages you
+#     accept and uncomment:
+ifplugin Mail::SpamAssassin::Plugin::TextCat
+# ok_languages en
+# score UNWANTED_LANGUAGE_BODY 3.0
+endif

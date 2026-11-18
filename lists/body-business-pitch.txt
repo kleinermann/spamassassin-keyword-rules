@@ -1,0 +1,16 @@
+# Cold sales pitches aimed at you as a business: SEO, web design, leads –
+# including their typical opt-out lines ("reply No", "not interested?").
+# Scoring: 1 hit = 1.0, 2+ hits = 3.0, 4+ hits = 5.0 total.
+# Each phrase alone is plausible in real mail, so they only add up together.
+#
+# Examples (remove the # to activate):
+# seo services
+# more traffic
+# first page of google
+# no obligation
+# re:\bbacklinks?\b
+#
+# Opt-out lines:
+# reply "No"
+# reply "Remove Me"
+# if you're not interested
